@@ -8,10 +8,17 @@ file_path = 'transient_list.json'
 class file_reader:
     @staticmethod
     def load_json(file_path):
-        """
+        """Load a JSON file.
 
-        @param file_path:
-        @return:
+        Args:
+            file_path (str): The path to the JSON file.
+
+        Returns:
+            list: The data loaded from the JSON file, or an empty list if an error occurred.
+
+        Raises:
+            FileNotFoundError: If the file does not exist.
+            json.JSONDecodeError: If the file is not a valid JSON.
         """
         try:
             with open(file_path, 'r') as file:
@@ -24,11 +31,17 @@ class file_reader:
 
     @staticmethod
     def save_json(transients, file_path):
-        """
+        """Save data to a JSON file.
 
-        @param transients:
-        @param file_path:
-        @return:
+        Args:
+            transients (list): The data to save.
+            file_path (str): The path to the JSON file.
+
+        Returns:
+            None
+
+        Raises:
+            Exception: If there is an error saving the file.
         """
         try:
             with open(file_path, 'w') as file:
@@ -40,17 +53,22 @@ class file_reader:
 
 class Main:
     def __init__(self, file_path):
-        """
+        """Initialize the Main class.
 
-        @param file_path:
+        Args:
+            file_path (str): The path to the JSON file.
+
+        Returns:
+            None
         """
         self.file_path = file_path
         self.transients = file_reader.load_json(self.file_path)
 
     def run(self):
-        """
+        """Run the main application logic.
 
-        @return:
+        Returns:
+            None
         """
         try:
             terminal_width = os.get_terminal_size().columns
@@ -70,9 +88,10 @@ class Main:
         self.save_data()
 
     def save_data(self):
-        """
+        """Save the current state of transients to a JSON file.
 
-        @return:
+        Returns:
+            None
         """
         file_reader.save_json(self.transients, self.file_path)
 

@@ -5,12 +5,23 @@ from reservation import enter_choice
 
 class Menu:
     def __init__(self, transients):
+        """Initialize the Menu with a list of transients.
+
+        Args:
+            transients (list): A list of transient data to display and manage.
+
+        Returns:
+            None
+        """
         self.transients = transients
 
     def display_menu(self):
-        """
+        """Display the main menu and handle user choices.
 
-        @return:
+        This method will loop indefinitely until the user chooses to exit.
+
+        Returns:
+            None
         """
         while True:
             print("\nMain Menu")
@@ -18,7 +29,7 @@ class Menu:
             print("2. Sort transient list")
             print("3. Filter transient list")
             print("4. Exit Cozy Cabin")
-            choice = enter_choice(1,4, "Enter a number from the menu: ")
+            choice = enter_choice(1, 4, "Enter a number from the menu: ")
 
             if choice == 1:
                 self.select_transient()
@@ -30,9 +41,13 @@ class Menu:
                 exit(0)
 
     def select_transient(self):
-        """
+        """Allow the user to select a transient to book.
 
-        @return:
+        This method displays the transient table and prompts the user to enter a transient ID.
+        It handles the booking process if the ID is valid.
+
+        Returns:
+            None
         """
         print_methods.show_transient_table(self.transients)
         user_input = input("Please input transient house's ID: ").strip()
@@ -49,9 +64,13 @@ class Menu:
             print("Invalid input. Please enter a number.")
 
     def sort_menu(self):
-        """
+        """Display the sorting options for the transient list.
 
-        @return:
+        This method allows the user to sort the transients by price or ID.
+        It returns to the main menu when the user is done.
+
+        Returns:
+            None
         """
         while True:
             print("\nSort")
@@ -60,7 +79,7 @@ class Menu:
             print("3. Sort by ID")
             print("4. Go back to Main Menu")
 
-            choice_sort = enter_choice(1,4,"Enter a number from the menu: ")
+            choice_sort = enter_choice(1, 4, "Enter a number from the menu: ")
 
             if choice_sort == 1:
                 sorted_transient = sort_filter.sort_transients_price(self.transients, "asc")
@@ -74,9 +93,13 @@ class Menu:
                 break
 
     def filter_menu(self):
-        """
+        """Display the filtering options for the transient list.
 
-        @return:
+        This method allows the user to filter transients by name or address.
+        It returns to the main menu when the user is done.
+
+        Returns:
+            None
         """
         while True:
             print("\nFilter")
@@ -84,7 +107,7 @@ class Menu:
             print("2. Filter by address")
             print("3. Go back to Main Menu")
 
-            choice_filter = enter_choice(1,3,"Enter a number from the menu: ")
+            choice_filter = enter_choice(1, 3, "Enter a number from the menu: ")
 
             if choice_filter in [1, 2]:
                 filter_query = input("Enter your filter query: ").strip()
