@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 file_path = 'transient_list.json'
 
-
 def show_available_dates(transient):
     """Display available dates for a transient.
 
