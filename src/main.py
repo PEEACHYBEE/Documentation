@@ -1,7 +1,7 @@
 import os
 import json
-import print_methods
-from menu import Menu
+from util import print_methods
+from util.menu import Menu
 
 file_path = 'transient_list.json'
 

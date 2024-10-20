@@ -1,7 +1,5 @@
-import sort_filter
-import print_methods
-from reservation import show_available_dates, reserve_dates
-from reservation import enter_choice
+from util import sort_filter, print_methods
+from util.reservation import show_available_dates, reserve_dates, enter_choice
 
 class Menu:
     def __init__(self, transients):
