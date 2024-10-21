@@ -1,5 +1,5 @@
 import re
-import print_methods
+from util import print_methods
 from prettytable import PrettyTable
 from datetime import datetime, timedelta
 
