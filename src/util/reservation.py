@@ -1,25 +1,18 @@
 import re
-import print_methods
 from prettytable import PrettyTable
 from datetime import datetime, timedelta
+from util.file_reader import FileReader
+from util import printing_methods
 
 file_path = 'transient_list.json'
 
 def show_available_dates(transient):
-    """Display available dates for a transient.
-
-    Args:
-        transient (dict): A dictionary containing transient details, including availability.
-
-    Returns:
-        set: A set of available dates, or None if no dates are available.
-    """
     print(f"Name: {transient['name']}")
     print(f"Description: {transient['description']}")
     print(f"Please check available dates for {transient['name']}:")
     print()
 
-    available_dates = []  # List holding available dates
+    available_dates = []
     available_dates_table = PrettyTable()
     available_dates_table.field_names = ["ID", "Dates", "Status"]
 
@@ -27,13 +20,11 @@ def show_available_dates(transient):
 
     for date, details in transient['availability'].items():
         status = details['status'].upper()
-        # Remove dates with "RESERVED" status
         if status != "RESERVED":
             index += 1
             available_dates_table.add_row([index, date, status])
             available_dates.append(date)
 
-    # Notify user if there are no available dates in a transient
     if len(available_dates) == 0:
         print("This transient has no available dates.")
         return None
@@ -41,18 +32,7 @@ def show_available_dates(transient):
     print(available_dates_table)
     return set(available_dates)
 
-
 def reserve_dates(transient, available_dates, transients):
-    """Reserve dates for a transient stay.
-
-    Args:
-        transient (dict): The selected transient details.
-        available_dates (set): A set of available dates for reservation.
-        transients (list): The list of all transients.
-
-    Returns:
-        int: 0 if returning to the main menu.
-    """
     available_dates_list = list(available_dates)
     available_dates_list.sort()
     while True:
@@ -95,7 +75,6 @@ def reserve_dates(transient, available_dates, transients):
                     print("Error: Some dates in the selected range are not available.")
                     continue
 
-                # Calculate the number of nights client will stay
                 num_nights = (end_date - start_date).days + 1
 
                 pay_method = input_pay_method()
@@ -103,14 +82,12 @@ def reserve_dates(transient, available_dates, transients):
                 price_per_head = transient["price_per_head"]
                 total_cost = number_of_people * price_per_head * num_nights
 
-                # Confirm reservation
-                print_methods.show_reservation_details(client_name, date_from, date_to, pay_method, number_of_people, num_nights, price_per_head, total_cost)
+                printing_methods.show_reservation_details(client_name, date_from, date_to, pay_method, number_of_people, num_nights, price_per_head, total_cost)
 
                 confirm = input_confirm()
                 if confirm == "n":
                     continue
 
-                # Update verified details on JSON
                 current_date = start_date
                 while current_date <= end_date:
                     date_key = current_date.strftime('%Y-%m-%d')
@@ -122,14 +99,17 @@ def reserve_dates(transient, available_dates, transients):
                     current_date += timedelta(days=1)
 
                 # Save the updated data back to the JSON file
-                from main import file_reader
-                file_reader.save_json(transients, file_path)
+                FileReader.save_json(transients,file_path)
+
+                confirmation_message = (
+                    f"Reservation confirmed and saved.\n"
+                    f"Dear Mr./Ms. {client_name}, please proceed to {transient['location']} on {date_from} and enjoy your stay until {date_to}.\n"
+                    "Thank you for trusting The Cozy Cabin."
+                )
 
                 print()
-                print("Reservation confirmed and saved.")
-                print(f"Dear Mr./Ms. {client_name}, please proceed to {transient['location']} on {date_from} and enjoy your stay until {date_to}.")
-                print("Thank you for trusting The Cozy Cabin.")
-                break
+                print(confirmation_message)
+                return confirmation_message
 
             except ValueError:
                 print("Invalid input. Please enter the number of people as an integer.")
@@ -141,13 +121,7 @@ def reserve_dates(transient, available_dates, transients):
         else:
             print("Invalid input. Please enter yes/no or y/n.")
 
-
 def input_pay_method():
-    """Get the payment method from the user.
-
-    Returns:
-        str: The selected payment method ("GCASH" or "PayMaya").
-    """
     while True:
         print("\nAvailable Payment Methods")
         print("1. GCASH")
@@ -160,13 +134,7 @@ def input_pay_method():
         else:
             print("\nInvalid! Please select one of the options.")
 
-
 def input_name():
-    """Get the client's name from the user.
-
-    Returns:
-        str: The validated client name.
-    """
     while True:
         client_name = input("Enter client name: ").strip()
         # Client name must not contain any integer
@@ -175,15 +143,8 @@ def input_name():
         else:
             return client_name
 
-
 def input_confirm():
-    """Get confirmation from the user.
-
-    Returns:
-        str: "y" for yes or "n" for no.
-    """
     while True:
-        # Confirmation
         ans_input = input("Would you like to proceed? (y/n): ").strip().lower()
         if ans_input in ["y", "yes"]:
             return "y"
@@ -192,41 +153,28 @@ def input_confirm():
         else:
             print("Invalid input. Please enter yes/no or y/n.")
 
-
 def input_number_of_people():
-    """Get the number of people for the reservation.
-
-    Returns:
-        int: The validated number of people.
-    """
     while True:
         number_of_people = input("Enter number of people: ").strip()
-        # Validates if input is integer
-        if number_of_people.isdigit():
-            number_of_people = int(number_of_people)
-            if number_of_people > 0:
-                return number_of_people
-            else:
-                print("Number of people must be greater than 0. Please try again.")
-        else:
-            print("Please enter a valid integer for number of people. Please try again.")
+
+        if not number_of_people.isdigit():
+            print("Please enter a valid integer for the number of people. Please try again.")
+            continue
+
+        number_of_people = int(number_of_people)
+
+        if number_of_people <= 0:
+            print("Number of people must be greater than 0. Please try again.")
+            continue
+
+        return number_of_people
 
 def enter_choice(min_num, max_num, message):
-    """Prompt the user to enter a choice within a specified range.
-
-    Args:
-        min_num (int): The minimum valid choice.
-        max_num (int): The maximum valid choice.
-        message (str): The prompt message displayed to the user.
-
-    Returns:
-        int: The user's validated choice within the specified range.
-    """
     while True:
         try:
             choice = int(input(message))
             if choice < min_num or choice > max_num:
-                print("Invalid Input. Please enter a number from", min_num, "to", max_num)
+                print("Invalid Input. Please enter a number from ",min_num, "to", max_num)
             else:
                 return choice
         except ValueError:

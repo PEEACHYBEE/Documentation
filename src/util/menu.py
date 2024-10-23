@@ -1,121 +1,131 @@
-from util import sort_filter, print_methods
-from util.reservation import show_available_dates, reserve_dates, enter_choice
+from util import sort_filter
+from util import printing_methods
+from util.reservation import show_available_dates, reserve_dates
 
 class Menu:
     def __init__(self, transients):
-        """Initialize the Menu with a list of transients.
-
-        Args:
-            transients (list): A list of transient data to display and manage.
-
-        Returns:
-            None
-        """
         self.transients = transients
 
     def display_menu(self):
-        """Display the main menu and handle user choices.
+        menu_actions = {
+            1: self.select_transient,
+            2: self.sort_menu,
+            3: self.filter_menu,
+            4: self.exit_program
+        }
 
-        This method will loop indefinitely until the user chooses to exit.
-
-        Returns:
-            None
-        """
         while True:
-            print("\nMain Menu")
-            print("1. Select transient to book")
-            print("2. Sort transient list")
-            print("3. Filter transient list")
-            print("4. Exit Cozy Cabin")
-            choice = enter_choice(1, 4, "Enter a number from the menu: ")
+            self.print_main_menu()
+            choice = self.enter_choice(1, 4, "Enter a number from the menu: ")
+            action = menu_actions.get(choice)
+            if action:
+                action()
+            else:
+                print("Invalid choice. Please try again.")
 
-            if choice == 1:
-                self.select_transient()
-            elif choice == 2:
-                self.sort_menu()
-            elif choice == 3:
-                self.filter_menu()
-            elif choice == 4:
-                exit(0)
+    def enter_choice(self, min_choice, max_choice, prompt):
+        from util.reservation import enter_choice  # Import moved inside the method
+        return enter_choice(min_choice, max_choice, prompt)
+
+    def print_main_menu(self):
+        print("\nMain Menu")
+        print("1. Select transient to book")
+        print("2. Sort transient list")
+        print("3. Filter transient list")
+        print("4. Exit Cozy Cabin")
+
+    def exit_program(self):
+        exit(0)
 
     def select_transient(self):
-        """Allow the user to select a transient to book.
-
-        This method displays the transient table and prompts the user to enter a transient ID.
-        It handles the booking process if the ID is valid.
-
-        Returns:
-            None
-        """
-        print_methods.show_transient_table(self.transients)
+        printing_methods.show_transient_table(self.transients)
         user_input = input("Please input transient house's ID: ").strip()
+        selected_transient = self.get_selected_transient(user_input)
+
+        if not selected_transient:
+            return
+
+        available_dates = show_available_dates(selected_transient)
+
+        if not available_dates:
+            return
+
+        reserve_dates(selected_transient, available_dates, self.transients)
+
+    def get_selected_transient(self, user_input):
         try:
             option = int(user_input)
-            selected_transient = next((t for t in self.transients if t['id'] == option), None)
-            if selected_transient:
-                available_dates = show_available_dates(selected_transient)
-                if available_dates:
-                    reserve_dates(selected_transient, available_dates, self.transients)
-            else:
-                print("Invalid ID. Please enter a valid transient house ID!")
+            return next((t for t in self.transients if t['id'] == option), None)
         except ValueError:
             print("Invalid input. Please enter a number.")
+            return None
 
     def sort_menu(self):
-        """Display the sorting options for the transient list.
+        sort_actions = {
+            1: lambda: self.sort_transients("asc"),
+            2: lambda: self.sort_transients("desc"),
+            3: self.show_unsorted_transients,
+            4: self.back_to_main_menu
+        }
 
-        This method allows the user to sort the transients by price or ID.
-        It returns to the main menu when the user is done.
-
-        Returns:
-            None
-        """
         while True:
-            print("\nSort")
-            print("1. Sort by price in ascending order")
-            print("2. Sort by price in descending order")
-            print("3. Sort by ID")
-            print("4. Go back to Main Menu")
+            self.print_sort_menu()
+            choice_sort = self.enter_choice(1, 4, "Enter a number from the menu: ")
+            action = sort_actions.get(choice_sort)
+            if action:
+                action()
+            else:
+                print("Invalid choice. Please try again.")
 
-            choice_sort = enter_choice(1, 4, "Enter a number from the menu: ")
+    def print_sort_menu(self):
+        print("\nSort")
+        print("1. Sort by price in ascending order")
+        print("2. Sort by price in descending order")
+        print("3. Sort by ID")
+        print("4. Go back to Main Menu")
 
-            if choice_sort == 1:
-                sorted_transient = sort_filter.sort_transients_price(self.transients, "asc")
-                print_methods.show_transient_table(sorted_transient)
-            elif choice_sort == 2:
-                sorted_transient = sort_filter.sort_transients_price(self.transients, "desc")
-                print_methods.show_transient_table(sorted_transient)
-            elif choice_sort == 3:
-                print_methods.show_transient_table(self.transients)
-            elif choice_sort == 4:
-                break
+    def sort_transients(self, order):
+        sorted_transient = sort_filter.sort_transients_price(self.transients, order)
+        printing_methods.show_transient_table(sorted_transient)
+
+    def show_unsorted_transients(self):
+        printing_methods.show_transient_table(self.transients)
+
+    def back_to_main_menu(self):
+        return
 
     def filter_menu(self):
-        """Display the filtering options for the transient list.
+        filter_actions = {
+            1: lambda: self.apply_filter(1),
+            2: lambda: self.apply_filter(2),
+            3: self.back_to_main_menu
+        }
 
-        This method allows the user to filter transients by name or address.
-        It returns to the main menu when the user is done.
-
-        Returns:
-            None
-        """
         while True:
-            print("\nFilter")
-            print("1. Filter by transient name")
-            print("2. Filter by address")
-            print("3. Go back to Main Menu")
+            self.print_filter_menu()
+            choice_filter = self.enter_choice(1, 3, "Enter a number from the menu: ")
+            action = filter_actions.get(choice_filter)
+            if action:
+                action()
+            else:
+                print("Invalid choice. Please try again.")
 
-            choice_filter = enter_choice(1, 3, "Enter a number from the menu: ")
+    def print_filter_menu(self):
+        print("\nFilter")
+        print("1. Filter by transient name")
+        print("2. Filter by address")
+        print("3. Go back to Main Menu")
 
-            if choice_filter in [1, 2]:
-                filter_query = input("Enter your filter query: ").strip()
-                if filter_query:
-                    filtered_transients = sort_filter.filter_transients(self.transients, choice_filter, filter_query)
-                    if filtered_transients:
-                        print_methods.show_transient_table(filtered_transients)
-                    else:
-                        print(f"\nNo transients found matching the query: {filter_query}")
-                else:
-                    print("Filter query cannot be empty.")
-            elif choice_filter == 3:
-                break
+    def apply_filter(self, choice_filter):
+        filter_query = input("Enter your filter query: ").strip()
+
+        if not filter_query:
+            print("Filter query cannot be empty.")
+            return
+
+        filtered_transients = sort_filter.filter_transients(self.transients, choice_filter, filter_query)
+
+        if filtered_transients:
+            printing_methods.show_transient_table(filtered_transients)
+        else:
+            print(f"\nNo transients found matching the query: {filter_query}")
